@@ -1,45 +1,46 @@
 extends CharacterBody2D
 class_name BasePlayer
 
-const PLAYER_COLORS = {
+{% if include_multiplayer %}const PLAYER_COLORS = {
 	0: Color(0.3, 0.3, 1.0),
 	1: Color(1.0, 0.3, 0.3),
 	2: Color(0.3, 0.3, 1.0),
 	3: Color(1.0, 1.0, 0.5),
 }
-const MAX_MOVEMENT_SPEED = 1000
+{% endif %}const MAX_MOVEMENT_SPEED = 1000
 @export var base_speed = 120 * 60
 
-var input_prefix: String = ""
+{% if include_multiplayer %}var input_prefix: String = ""
 var player_num: int
 var device_id: int
 
 var tagger: bool = false
-
 var tag_cooldown_timer: float = 0.0
 var running_timer: float = 0.0
 const SCORE_INTERVAL: float = 10.0
 var running_streak = true
 
-# dash code
-const DASH_TIME: float = 0.1  # the length of time a dash happens over
-var dash_timer: float = 0.0  # the length of time a dash happens over
-
-const DASH_CHARGE_MAX: int = 3  # max number of charges
-var dash_charges: int = DASH_CHARGE_MAX  # number of dashes the player has
-var dash_recharge_timer: float = 0.0  # amount of time left to recharge
-
 signal running_timer_elapsed(player_num: int)
+{% endif %}
+
+# dash code
+const DASH_TIME: float = 0.1
+var dash_timer: float = 0.0
+const DASH_CHARGE_MAX: int = 3
+var dash_charges: int = DASH_CHARGE_MAX
+var dash_recharge_timer: float = 0.0
 
 
 func _ready() -> void:
-	$TaggerLabel.text = "Tagger"
+{% if include_multiplayer %}	$TaggerLabel.text = "Tagger"
 	input_prefix = "player%d_" % [device_id]
 	$Sprite2D.modulate = PLAYER_COLORS[device_id]
 	if device_id == 0:
 		tagger = true
 	player_num = device_id + 1
 	add_to_group("players")
+{% else %}	add_to_group("players")
+{% endif %}
 
 
 func _physics_process(delta: float) -> void:
@@ -51,21 +52,21 @@ func _physics_process(delta: float) -> void:
 		velocity = velocity - (velocity * 1.9) * delta  # sets friction
 		velocity = velocity.clampf(-1000, 1000)  # sets top speed
 
-	if tag_cooldown_timer > 0:
+{% if include_multiplayer %}	if tag_cooldown_timer > 0:
 		tag_cooldown_timer = tag_cooldown_timer - delta
 
 	# Update running timer and score for non-taggers
 	if !tagger:
 		running_timer += delta
 		if running_timer >= SCORE_INTERVAL:
-			running_timer -= SCORE_INTERVAL  # Reset timer but keep remainder
+			running_timer -= SCORE_INTERVAL
 			running_timer_elapsed.emit(player_num)
-		# Update the label with running timer value
 		$TaggerLabel.visible = true
 		$TaggerLabel.text = "%.1f" % (SCORE_INTERVAL - running_timer)
 	else:
 		$TaggerLabel.visible = tagger
 		$TaggerLabel.text = "Tagger"
+{% endif %}
 
 
 func handle_collision(delta: float) -> void:
@@ -73,7 +74,7 @@ func handle_collision(delta: float) -> void:
 	if collision:
 		var collider = collision.get_collider()
 
-		# If colliding with another player, handle elastic collision
+{% if include_multiplayer %}		# If colliding with another player, handle elastic collision
 		if collider is BasePlayer:
 			TagManager.handle_tag(self, collider)
 
@@ -110,24 +111,38 @@ func handle_collision(delta: float) -> void:
 			var reflect = collision.get_remainder().bounce(collision.get_normal())
 			velocity = velocity.bounce(collision.get_normal())
 			move_and_collide(reflect)
+{% else %}		# Regular wall bounce
+		var reflect = collision.get_remainder().bounce(collision.get_normal())
+		velocity = velocity.bounce(collision.get_normal())
+		move_and_collide(reflect)
+{% endif %}
 
 
 func handle_movement(delta: float) -> void:
-	var input_direction = Input.get_vector(
+{% if include_multiplayer %}	var input_direction = Input.get_vector(
 		input_prefix + "left", input_prefix + "right", input_prefix + "up", input_prefix + "down"
 	)
+{% else %}	var input_direction = Input.get_vector(
+		"player0_left", "player0_right", "player0_up", "player0_down"
+	)
+{% endif %}
 
 	if input_direction != Vector2.ZERO:
 		velocity = velocity + ((input_direction * base_speed) * .5) * delta
 
 
 func handle_dash(delta: float) -> void:
-	var input_direction = Input.get_vector(
+{% if include_multiplayer %}	var input_direction = Input.get_vector(
 		input_prefix + "left", input_prefix + "right", input_prefix + "up", input_prefix + "down"
 	)
 
 	if Input.is_action_just_pressed(input_prefix + "dash") and dash_timer <= 0 and dash_charges > 0:
-		dash_timer = DASH_TIME
+{% else %}	var input_direction = Input.get_vector(
+		"player0_left", "player0_right", "player0_up", "player0_down"
+	)
+
+	if Input.is_action_just_pressed("player0_dash") and dash_timer <= 0 and dash_charges > 0:
+{% endif %}		dash_timer = DASH_TIME
 		dash_charges = dash_charges - 1
 
 	if dash_timer > 0:

@@ -4,7 +4,7 @@ name = "godot-tag-game"
 [variables.project_name]
 type = "string"
 prompt = "Project name"
-default = "my-tag-game"
+default = "my-game"
 validation = '^[a-zA-Z][a-zA-Z0-9_-]*$'
 validation_message = "Must start with a letter, alphanumeric/hyphens/underscores only"
 
@@ -16,12 +16,29 @@ default = "Your Name"
 [variables.description]
 type = "string"
 prompt = "Project description"
-default = "A multiplayer tag game built with Godot"
+default = "A game built with Godot"
 
 [variables.godot_version]
 type = "string"
 prompt = "Godot version"
 default = "4.3"
+
+[variables.include_multiplayer]
+type = "bool"
+prompt = "Include multiplayer support (2+ players)?"
+default = false
+
+[variables.include_bots]
+type = "bool"
+prompt = "Include bot players?"
+default = false
+when = "include_multiplayer"
+
+[variables.include_ui]
+type = "bool"
+prompt = "Include UI elements (score, winner screen)?"
+default = false
+when = "include_multiplayer"
 
 [files]
 exclude = [
@@ -33,6 +50,14 @@ exclude = [
 copy_without_render = [
     "**/*.png",
     "**/*.svg"
+]
+conditional = [
+    { pattern = "scenes/bot_player.gd.tera", when = "include_bots" },
+    { pattern = "utils/add_bot.gd", when = "include_bots" },
+    { pattern = "utils/score.gd", when = "include_ui" },
+    { pattern = "utils/winner.gd", when = "include_ui" },
+    { pattern = "utils/reset_button.gd", when = "include_ui" },
+    { pattern = "utils/tag.gd", when = "include_multiplayer" }
 ]
 
 [hooks]

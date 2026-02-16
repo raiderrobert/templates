@@ -6,27 +6,24 @@
 
 ## About
 
-This is a multiplayer tag game built with Godot {{ godot_version }}. Players move around the arena trying to tag each other while avoiding being tagged themselves.
+{% if include_multiplayer %}This is a multiplayer game built with Godot {{ godot_version }}. Players{% if include_ui %} compete for high scores{% endif %} using smooth character movement and physics.
+{% else %}This is a game built with Godot {{ godot_version }} featuring smooth character movement and physics.
+{% endif %}
 
 ## Features
 
-- Multiple player support with controller and keyboard controls
-- Tag mechanics with player tracking
-- Smooth character movement and physics
-- Bot players for single-player mode
-
-## Movement Mechanics
-
-- [x] Holding direction spins the ball
-- [ ] Obstacles (walls, etc) bounce players
-- [ ] Going outside the play area should rapidly slow you down, like sand or something
+- Character with dash mechanics
+{% if include_multiplayer %}- Multiple player support with controller and keyboard controls
+{% if include_ui %}- Score tracking and winner display
+{% endif %}{% if include_bots %}- Bot players for single-player mode
+{% endif %}{% endif %}- Smooth physics-based movement
 
 ## Getting Started
 
 1. Open `project.godot` in Godot {{ godot_version }} or later
 2. Press F5 to run the game
-3. Use WASD or arrow keys to move
-4. Press space or controller buttons to dash
+3. Use {% if include_multiplayer %}WASD or arrow keys{% else %}WASD{% endif %} to move
+4. Press space{% if include_multiplayer %} or controller buttons{% endif %} to dash
 
 ## Controls
 
@@ -34,16 +31,18 @@ This is a multiplayer tag game built with Godot {{ godot_version }}. Players mov
 - WASD: Movement
 - Space: Dash
 
-### Player 1-2 (Controllers)
+{% if include_multiplayer %}### Player 1-2 (Controllers)
 - D-pad/Left stick: Movement
 - A button: Dash
+{% endif %}
 
 ## Project Structure
 
 - `main.tscn` - Main game scene
-- `level.gd` - Level logic and game management
-- `scenes/` - Player and game object scenes
-- `utils/` - Utility scripts (camera, scoring, UI)
+- `level.gd` - Level logic{% if include_multiplayer %} and player management{% endif %}
+- `scenes/` - Player scenes and scripts
+{% if include_ui or include_bots %}- `utils/` - Utility scripts{% if include_ui %} (camera, scoring, UI){% endif %}
+{% endif %}
 
 ## License
 
