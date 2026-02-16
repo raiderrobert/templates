@@ -1,0 +1,85 @@
+extends Node2D
+class_name Level
+
+var player_scene = preload("res://scenes/player.tscn")  # Make sure this path matches your player scene
+var active_players = {}  # Dictionary to track active players: {device_id: player_node}
+var spawn_points = []  # Array to hold spawn point nodes
+
+signal player_joined(player_node)
+signal player_left(player_node)
+signal players_reorganized(active_player_list)
+
+
+func _ready() -> void:
+	# Get all spawn points and sort them by name
+	for i in range(1, 5):  # For Spawn1 through Spawn4
+		var spawn = get_node("Spawn" + str(i))
+		if spawn:
+			spawn_points.append(spawn)
+
+	# Check for already connected devices
+	check_connected_devices()
+
+	# Connect joy connection signals
+	Input.joy_connection_changed.connect(_on_joy_connection_changed)
+	add_to_group("level")
+
+
+func check_connected_devices() -> void:
+	# Check all possible controller indices
+	for device in range(Input.get_connected_joypads().size()):
+		if not device in active_players:
+			spawn_player(device)
+
+
+func spawn_player(device: int) -> void:
+	# Only spawn if we have available spawn points
+	if active_players.size() >= spawn_points.size():
+		return
+
+	var player = player_scene.instantiate()
+	var spawn_position = spawn_points[active_players.size()].global_position
+
+	player.global_position = spawn_position
+	player.device_id = device  # Assuming your player scene has a device_id property
+	add_child(player)
+
+	active_players[device] = player
+	emit_signal("player_joined", player)
+
+
+func remove_player(device: int) -> void:
+	if device in active_players:
+		var player = active_players[device]
+
+		emit_signal("player_left", player)
+
+		player.queue_free()
+		active_players.erase(device)
+
+		# Reorganize remaining players to fill gaps
+		reorganize_players()
+
+
+func reorganize_players() -> void:
+	var players = active_players.values()
+	var devices = active_players.keys()
+
+	# Clear the dictionary
+	active_players.clear()
+
+	# Reassign positions
+	for i in range(players.size()):
+		var player = players[i]
+		var device = devices[i]
+		player.global_position = spawn_points[i].global_position
+		active_players[device] = player
+
+	emit_signal("players_reorganized", active_players.values())
+
+
+func _on_joy_connection_changed(device: int, connected: bool) -> void:
+	if connected:
+		spawn_player(device)
+	else:
+		remove_player(device)

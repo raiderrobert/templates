@@ -1,0 +1,50 @@
+# {{ project_name }}
+
+{{ description }}
+
+**Author:** {{ author }}
+
+## About
+
+This is a multiplayer tag game built with Godot {{ godot_version }}. Players move around the arena trying to tag each other while avoiding being tagged themselves.
+
+## Features
+
+- Multiple player support with controller and keyboard controls
+- Tag mechanics with player tracking
+- Smooth character movement and physics
+- Bot players for single-player mode
+
+## Movement Mechanics
+
+- [x] Holding direction spins the ball
+- [ ] Obstacles (walls, etc) bounce players
+- [ ] Going outside the play area should rapidly slow you down, like sand or something
+
+## Getting Started
+
+1. Open `project.godot` in Godot {{ godot_version }} or later
+2. Press F5 to run the game
+3. Use WASD or arrow keys to move
+4. Press space or controller buttons to dash
+
+## Controls
+
+### Player 0 (Keyboard)
+- WASD: Movement
+- Space: Dash
+
+### Player 1-2 (Controllers)
+- D-pad/Left stick: Movement
+- A button: Dash
+
+## Project Structure
+
+- `main.tscn` - Main game scene
+- `level.gd` - Level logic and game management
+- `scenes/` - Player and game object scenes
+- `utils/` - Utility scripts (camera, scoring, UI)
+
+## License
+
+Created with Godot Engine - https://godotengine.org

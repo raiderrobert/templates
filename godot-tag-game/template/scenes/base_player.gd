@@ -1,0 +1,150 @@
+extends CharacterBody2D
+class_name BasePlayer
+
+const PLAYER_COLORS = {
+	0: Color(0.3, 0.3, 1.0),
+	1: Color(1.0, 0.3, 0.3),
+	2: Color(0.3, 0.3, 1.0),
+	3: Color(1.0, 1.0, 0.5),
+}
+const MAX_MOVEMENT_SPEED = 1000
+@export var base_speed = 120 * 60
+
+var input_prefix: String = ""
+var player_num: int
+var device_id: int
+
+var tagger: bool = false
+
+var tag_cooldown_timer: float = 0.0
+var running_timer: float = 0.0
+const SCORE_INTERVAL: float = 10.0
+var running_streak = true
+
+# dash code
+const DASH_TIME: float = 0.1  # the length of time a dash happens over
+var dash_timer: float = 0.0  # the length of time a dash happens over
+
+const DASH_CHARGE_MAX: int = 3  # max number of charges
+var dash_charges: int = DASH_CHARGE_MAX  # number of dashes the player has
+var dash_recharge_timer: float = 0.0  # amount of time left to recharge
+
+signal running_timer_elapsed(player_num: int)
+
+
+func _ready() -> void:
+	$TaggerLabel.text = "Tagger"
+	input_prefix = "player%d_" % [device_id]
+	$Sprite2D.modulate = PLAYER_COLORS[device_id]
+	if device_id == 0:
+		tagger = true
+	player_num = device_id + 1
+	add_to_group("players")
+
+
+func _physics_process(delta: float) -> void:
+	handle_movement(delta)
+	handle_dash(delta)
+	handle_collision(delta)
+
+	if dash_timer <= 0:
+		velocity = velocity - (velocity * 1.9) * delta  # sets friction
+		velocity = velocity.clampf(-1000, 1000)  # sets top speed
+
+	if tag_cooldown_timer > 0:
+		tag_cooldown_timer = tag_cooldown_timer - delta
+
+	# Update running timer and score for non-taggers
+	if !tagger:
+		running_timer += delta
+		if running_timer >= SCORE_INTERVAL:
+			running_timer -= SCORE_INTERVAL  # Reset timer but keep remainder
+			running_timer_elapsed.emit(player_num)
+		# Update the label with running timer value
+		$TaggerLabel.visible = true
+		$TaggerLabel.text = "%.1f" % (SCORE_INTERVAL - running_timer)
+	else:
+		$TaggerLabel.visible = tagger
+		$TaggerLabel.text = "Tagger"
+
+
+func handle_collision(delta: float) -> void:
+	var collision = move_and_collide(velocity * delta)
+	if collision:
+		var collider = collision.get_collider()
+
+		# If colliding with another player, handle elastic collision
+		if collider is BasePlayer:
+			TagManager.handle_tag(self, collider)
+
+			# Reset running timer when tagged
+			if tagger:
+				running_timer = 0.0
+			if collider.tagger:
+				collider.running_timer = 0.0
+
+			# Get the relative position to determine collision direction
+			var collision_normal = (collider.global_position - global_position).normalized()
+
+			# Calculate velocities along the collision normal
+			var v1 = velocity.dot(collision_normal)
+			var v2 = collider.velocity.dot(collision_normal)
+
+			# Assume equal mass for simplicity (1.0)
+			var mass1 = 1.0
+			var mass2 = 1.0
+
+			# Calculate new velocities (elastic collision formula)
+			var new_v1 = ((mass1 - mass2) * v1 + 2 * mass2 * v2) / (mass1 + mass2)
+			var new_v2 = ((mass2 - mass1) * v2 + 2 * mass1 * v1) / (mass1 + mass2)
+
+			# Apply the new velocities along the collision normal
+			velocity = velocity - collision_normal * (v1 - new_v1)
+			collider.velocity = collider.velocity - collision_normal * (v2 - new_v2)
+
+			# Move both objects to prevent them from sticking together
+			var half_displacement = collision.get_remainder() * 0.5
+			move_and_collide(half_displacement)
+		else:
+			# Regular wall bounce
+			var reflect = collision.get_remainder().bounce(collision.get_normal())
+			velocity = velocity.bounce(collision.get_normal())
+			move_and_collide(reflect)
+
+
+func handle_movement(delta: float) -> void:
+	var input_direction = Input.get_vector(
+		input_prefix + "left", input_prefix + "right", input_prefix + "up", input_prefix + "down"
+	)
+
+	if input_direction != Vector2.ZERO:
+		velocity = velocity + ((input_direction * base_speed) * .5) * delta
+
+
+func handle_dash(delta: float) -> void:
+	var input_direction = Input.get_vector(
+		input_prefix + "left", input_prefix + "right", input_prefix + "up", input_prefix + "down"
+	)
+
+	if Input.is_action_just_pressed(input_prefix + "dash") and dash_timer <= 0 and dash_charges > 0:
+		dash_timer = DASH_TIME
+		dash_charges = dash_charges - 1
+
+	if dash_timer > 0:
+		velocity = input_direction * 2000
+		dash_timer = dash_timer - delta
+
+	if dash_charges < DASH_CHARGE_MAX and dash_recharge_timer <= 0:
+		match dash_charges:
+			0:
+				dash_recharge_timer = 1
+			1:
+				dash_recharge_timer = 2
+			2:
+				dash_recharge_timer = 3
+
+	if dash_recharge_timer > 0:
+		dash_recharge_timer = dash_recharge_timer - delta
+
+		if dash_recharge_timer <= 0:
+			dash_charges = dash_charges + 1
