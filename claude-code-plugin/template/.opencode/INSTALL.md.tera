@@ -1,0 +1,67 @@
+# Installing {{ plugin_name | capitalize }} for OpenCode
+
+{{ description }}.
+
+## Prerequisites
+
+- [OpenCode](https://github.com/opencode-ai/opencode) installed and configured
+- Git
+
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/{{ github_username }}/{{ plugin_name }}.git ~/.config/opencode/{{ plugin_name }}
+
+# Create the skills directory if it doesn't exist
+mkdir -p ~/.config/opencode/skills
+
+# Symlink skills into OpenCode
+ln -s ~/.config/opencode/{{ plugin_name }}/skills ~/.config/opencode/skills/{{ plugin_name }}
+```
+
+After installation, restart OpenCode to pick up the new skills.
+
+## Verify
+
+Confirm the symlink is in place:
+
+```bash
+ls -la ~/.config/opencode/skills/{{ plugin_name }}
+```
+
+You should see a symbolic link pointing to `~/.config/opencode/{{ plugin_name }}/skills`.
+
+## Updating
+
+Pull the latest changes from the repository:
+
+```bash
+cd ~/.config/opencode/{{ plugin_name }}
+git pull origin main
+```
+
+Restart OpenCode after updating to load the latest skills.
+
+## Troubleshooting
+
+**Skills not loading after install:**
+- Verify the symlink exists: `ls -la ~/.config/opencode/skills/{{ plugin_name }}`
+- Make sure you restarted OpenCode after installation
+- Check that the target directory contains skill files: `ls ~/.config/opencode/{{ plugin_name }}/skills/`
+
+**Symlink errors:**
+- Ensure the target directory exists before creating the symlink
+- On some systems you may need to remove a broken symlink before recreating it: `rm ~/.config/opencode/skills/{{ plugin_name }}`
+
+## Uninstalling
+
+```bash
+# Remove the symlink
+rm ~/.config/opencode/skills/{{ plugin_name }}
+
+# Remove the cloned repository
+rm -rf ~/.config/opencode/{{ plugin_name }}
+```
+
+Restart OpenCode after uninstalling.

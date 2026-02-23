@@ -1,0 +1,15 @@
+{
+  "name": "{{ plugin_name }}-dev",
+  "description": "Development marketplace for {{ plugin_name }}",
+  "owner": {
+    "name": "{{ author }}"
+  },
+  "plugins": [
+    {
+      "name": "{{ plugin_name }}",
+      "description": "{{ description }}",
+      "version": "0.1.0",
+      "source": "./"
+    }
+  ]
+}

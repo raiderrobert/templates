@@ -1,0 +1,81 @@
+# Installing {{ plugin_name | capitalize }} for Codex
+
+{{ description }}.
+
+## Prerequisites
+
+- [Codex](https://github.com/openai/codex) installed and configured
+- Git
+
+## Installation
+
+### macOS / Linux
+
+```bash
+# Clone the repository
+git clone https://github.com/{{ github_username }}/{{ plugin_name }}.git ~/.codex/{{ plugin_name }}
+
+# Create the skills directory if it doesn't exist
+mkdir -p ~/.agents/skills
+
+# Symlink skills into Codex
+ln -s ~/.codex/{{ plugin_name }}/skills ~/.agents/skills/{{ plugin_name }}
+```
+
+### Windows (PowerShell)
+
+```powershell
+# Clone the repository
+git clone https://github.com/{{ github_username }}/{{ plugin_name }}.git "$env:USERPROFILE\.codex\{{ plugin_name }}"
+
+# Create the skills directory if it doesn't exist
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.agents\skills"
+
+# Symlink skills into Codex
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.agents\skills\{{ plugin_name }}" -Target "$env:USERPROFILE\.codex\{{ plugin_name }}\skills"
+```
+
+## Verify
+
+Confirm the symlink is in place:
+
+```bash
+# macOS / Linux
+ls -la ~/.agents/skills/{{ plugin_name }}
+
+# Windows (PowerShell)
+Get-Item "$env:USERPROFILE\.agents\skills\{{ plugin_name }}"
+```
+
+You should see a symbolic link pointing to `~/.codex/{{ plugin_name }}/skills`.
+
+## Updating
+
+Pull the latest changes from the repository:
+
+```bash
+cd ~/.codex/{{ plugin_name }}
+git pull origin main
+```
+
+## Uninstalling
+
+### macOS / Linux
+
+```bash
+# Remove the symlink
+rm ~/.agents/skills/{{ plugin_name }}
+
+# Remove the cloned repository
+rm -rf ~/.codex/{{ plugin_name }}
+```
+
+### Windows (PowerShell)
+
+```powershell
+# Remove the symlink
+Remove-Item "$env:USERPROFILE\.agents\skills\{{ plugin_name }}"
+
+# Remove the cloned repository
+Remove-Item -Recurse -Force "$env:USERPROFILE\.codex\{{ plugin_name }}"
+```

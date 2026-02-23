@@ -1,0 +1,48 @@
+# {{ plugin_name | capitalize }}
+
+{{ description }}.
+
+## Installation
+
+### Claude Code (via Plugin Marketplace)
+
+```bash
+/plugin marketplace add {{ github_username }}/{{ plugin_name }}
+/plugin install {{ plugin_name }}@{{ plugin_name }}-dev
+```
+
+### Cursor
+
+In Cursor Agent chat:
+
+```text
+/plugin-add {{ plugin_name }}
+```
+
+### Codex
+
+Tell Codex:
+
+```
+Fetch and follow instructions from https://raw.githubusercontent.com/{{ github_username }}/{{ plugin_name }}/refs/heads/main/.codex/INSTALL.md
+```
+
+### OpenCode
+
+Tell OpenCode:
+
+```
+Fetch and follow instructions from https://raw.githubusercontent.com/{{ github_username }}/{{ plugin_name }}/refs/heads/main/.opencode/INSTALL.md
+```
+
+## Skills Catalog
+
+| Skill | Description |
+|-------|-------------|
+| *(add your skills here)* | |
+{% if license == "MIT" %}
+
+## License
+
+MIT
+{% endif %}

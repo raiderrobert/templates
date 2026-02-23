@@ -1,0 +1,17 @@
+{
+  "name": "{{ plugin_name }}",
+  "displayName": "{{ plugin_name | capitalize }}",
+  "description": "{{ description }}",
+  "version": "0.1.0",
+  "author": {
+    "name": "{{ author }}"
+  },
+  "homepage": "https://github.com/{{ github_username }}/{{ plugin_name }}",
+  "repository": "https://github.com/{{ github_username }}/{{ plugin_name }}",
+  "license": "{{ license }}",
+  "keywords": ["skills", "prompts", "workflows"],
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "commands": "./commands/",
+  "hooks": "./hooks/hooks.json"
+}
