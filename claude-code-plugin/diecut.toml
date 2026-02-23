@@ -1,0 +1,43 @@
+[template]
+name = "claude-code-plugin"
+description = "Scaffold a Claude Code plugin with multi-IDE support (Claude Code, Cursor, Codex, OpenCode)"
+version = "0.1.0"
+
+[variables.plugin_name]
+type = "string"
+prompt = "Plugin name"
+default = "my-plugin"
+validation = '^[a-z][a-z0-9-]*$'
+validation_message = "Must start with a lowercase letter, lowercase alphanumeric and hyphens only"
+
+[variables.description]
+type = "string"
+prompt = "Plugin description"
+default = "Skills and prompts for Claude Code"
+
+[variables.author]
+type = "string"
+prompt = "Author name"
+
+[variables.github_username]
+type = "string"
+prompt = "GitHub username"
+
+[variables.license]
+type = "select"
+prompt = "License"
+choices = ["MIT", "UNLICENSED"]
+default = "MIT"
+
+[files]
+copy_without_render = [
+    "**/*.png",
+    "**/*.jpg",
+    "**/*.gif"
+]
+conditional = [
+    { pattern = "LICENSE", when = "license == 'MIT'" }
+]
+
+[hooks]
+post_create = "git init && git add -A && git commit -m 'feat: initial plugin scaffold'"
